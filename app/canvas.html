@@ -60,7 +60,7 @@
 <body>
   <h1>手写数字识别演示</h1>
   <h2>在下方画布中绘制一个数字，点击“识别数字”按钮进行识别</h2>
-  <canvas id="canvas" width="300" height="300"></canvas>
+  <canvas id="canvas" width="280" height="280"></canvas>
   <div class="btn-group">
     <button id="predictBtn">识别数字</button>
     <button id="clearBtn">清空</button>
@@ -95,24 +95,13 @@
     };
 
     document.getElementById('predictBtn').onclick = async () => {
-      // 将画布缩放到 28x28 灰度
-      const imgData = ctx.getImageData(0, 0, 300, 300);
-      const small = document.createElement('canvas');
-      small.width = 28; small.height = 28;
-      const smallCtx = small.getContext('2d');
-      smallCtx.drawImage(canvas, 0, 0, 28, 28);
-      const data = smallCtx.getImageData(0, 0, 28, 28).data;
-      // 转为灰度数组
-      const arr = [];
-      for (let i = 0; i < data.length; i += 4) {
-        // 简单平均灰度
-        arr.push((data[i] + data[i+1] + data[i+2]) / 3);
-      }
+      // 获取画布原始数据
+      const imageData = canvas.toDataURL('image/png');
       // 发送到后端
       const res = await fetch('/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: arr })
+        body: JSON.stringify({ image: imageData })
       });
       const result = await res.json();
       document.getElementById('result').textContent =

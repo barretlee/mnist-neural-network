@@ -15,10 +15,12 @@
     "machine-learning"
   ],
   "dependencies": {
+    "canvas": "^3.2.0",
     "pngjs": "^7.0.0"
   },
   "devDependencies": {
     "mocha": "^11.7.4",
     "chai": "^6.2.0"
-  }
+  },
+  "repository": "git@github.com:barretlee/mnist-neural-network.git"
 }

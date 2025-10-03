@@ -10,8 +10,10 @@ if (!fs.existsSync(buildDir)) fs.mkdirSync(buildDir);
 // 加载 MNIST 数据集
 // MNIST 是一个手写数字图片数据集，常用于神经网络入门
 const mnist = loadMNIST();
-const trainImages = mnist.train.images.slice(0, 100); // 仅取前 100 个样本做演示
-const trainLabels = mnist.train.labels.slice(0, 100);
+const trainImages = mnist.train.images; // 使用全部训练样本
+const trainLabels = mnist.train.labels;
+const testImages = mnist.test.images;
+const testLabels = mnist.test.labels;
 
 // 网络结构配置
 const config = {
@@ -62,8 +64,8 @@ fs.writeFileSync(path.join(buildDir, 'config.json'), JSON.stringify(config, null
 // 测试网络（输出前 5 个样本预测结果）
 console.log('\n测试网络输出:');
 for (let i = 0; i < 5; i++) {
-  const input = trainImages[i];
-  const label = trainLabels[i];
+  const input = testImages[i];
+  const label = testLabels[i];
   const { output } = net.forward(input);
   const pred = output.indexOf(Math.max(...output));
   // 输出预测结果和真实标签

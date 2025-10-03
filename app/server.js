@@ -2,46 +2,42 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { loadNetworkFromBuild } = require('../src/networkLoader');
+const { createCanvas, loadImage } = require('canvas');
 
 // 端口
 const PORT = 8080;
 
 // 识别图片数据
-function predictDigit(imageData) {
+async function predictDigit(imageDataURL) {
   const net = loadNetworkFromBuild(true);
   if (!net) return { error: 'No trained model found.' };
 
-  // 压缩图片到 28x28
-  function resizeTo28x28(data, srcWidth, srcHeight) {
-    const dst = [];
-    for (let y = 0; y < 28; y++) {
-      for (let x = 0; x < 28; x++) {
-        // 最近邻采样
-        const srcX = Math.floor(x * srcWidth / 28);
-        const srcY = Math.floor(y * srcHeight / 28);
-        dst.push(data[srcY * srcWidth + srcX]);
-      }
+  try {
+    // 从 DataURL 加载图片
+    const img = await loadImage(imageDataURL);
+    const canvas = createCanvas(28, 28);
+    const ctx = canvas.getContext('2d');
+    
+    // 绘制并缩放图片到 28x28
+    ctx.drawImage(img, 0, 0, 28, 28);
+    const imgData = ctx.getImageData(0, 0, 28, 28).data;
+    
+    // 转为灰度数组
+    const input = [];
+    for (let i = 0; i < imgData.length; i += 4) {
+      // 简单平均灰度，考虑 alpha 通道
+      input.push((imgData[i] + imgData[i+1] + imgData[i+2]) / 3 + (255 - imgData[i+3]));
     }
-    return dst;
+    
+    // 归一化
+    const normalized = input.map(v => Math.max(0, Math.min(1, v / 255)));
+    
+    let { output } = net.forward(normalized);
+    output = output.map(v => v.toFixed(3) * 1000);
+    return { prediction: pred, output };
+  } catch (e) {
+    return { error: 'Failed to process image' };
   }
-
-  let input = imageData;
-  // 如果不是 784 长度，尝试压缩
-  if (input.length !== 784) {
-    const side = Math.sqrt(input.length);
-    if (Number.isInteger(side)) {
-      input = resizeTo28x28(input, side, side);
-    } else {
-      // 长度异常，补零
-      input = input.concat(Array(784 - input.length).fill(0)).slice(0, 784);
-    }
-  }
-
-  input = input.map(v => Math.max(0, Math.min(1, v / 255)));
-
-  const { output } = net.forward(input);
-  const pred = output.indexOf(Math.max(...output));
-  return { prediction: pred, output };
 }
 
 // 简单静态文件服务
@@ -70,10 +66,10 @@ const server = http.createServer((req, res) => {
   } else if (req.method === 'POST' && req.url === '/predict') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const { image } = JSON.parse(body);
-        const result = predictDigit(image);
+        const result = await predictDigit(image);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(result));
       } catch (e) {
