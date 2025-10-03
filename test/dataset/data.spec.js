@@ -4,7 +4,7 @@ const path = require('path');
 const { loadMNIST } = require('../../src/dataset');
 
 describe('MNIST Data Loader', function () {
-  it('should load the first image and save to test/tmp/first-image.png', function () {
+  it('should load the first image and save to tmp/first-image.png', function () {
     const mnist = loadMNIST();
     expect(mnist.train.images.length).to.be.greaterThan(0, 'No images loaded');
     const img = mnist.train.images[0];
@@ -24,8 +24,15 @@ describe('MNIST Data Loader', function () {
         png.data[ptr + 3] = 255; // A
       }
     }
-    const outPath = path.join(__dirname, '../tmp/first-image.png');
+    const outPath = path.join(__dirname, '../../tmp/first-image.png');
     fs.writeFileSync(outPath, PNG.sync.write(png));
     expect(fs.existsSync(outPath)).to.be.true;
+  });
+
+  after(function () {
+    const tmpDir = path.join(__dirname, '../../tmp');
+    if (fs.existsSync(tmpDir)) {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
   });
 });

@@ -113,6 +113,20 @@ class NeuralNetwork {
       biasO: this.biasO,
     };
   }
+
+  /**
+   * 导入模型参数
+   * @param {Object} model
+   */
+  import(model) {
+    this.inputSize = model.inputSize;
+    this.hiddenSize = model.hiddenSize;
+    this.outputSize = model.outputSize;
+    this.weightsIH = model.weightsIH;
+    this.biasH = model.biasH;
+    this.weightsHO = model.weightsHO;
+    this.biasO = model.biasO;
+  }
 }
 
 module.exports = NeuralNetwork;
