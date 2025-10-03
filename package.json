@@ -1,0 +1,23 @@
+{
+  "name": "mnist-neural-network",
+  "version": "1.0.0",
+  "description": "A neural network demonstration for the MNIST dataset, implemented from scratch.",
+  "author": "Barret Lee <barret.china@gmail.com>",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha \"test/**/*.spec.js\""
+  },
+  "keywords": [
+    "deep-learning",
+    "neural-network",
+    "machine-learning"
+  ],
+  "dependencies": {
+    "pngjs": "^7.0.0"
+  },
+  "devDependencies": {
+    "mocha": "^11.7.4",
+    "chai": "^6.2.0"
+  }
+}
