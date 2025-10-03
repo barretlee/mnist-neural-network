@@ -24,7 +24,9 @@ describe('MNIST Data Loader', function () {
         png.data[ptr + 3] = 255; // A
       }
     }
-    const outPath = path.join(__dirname, '../../tmp/first-image.png');
+    const tmpDir = path.join(__dirname, '../../tmp');
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
+    const outPath = path.join(tmpDir, 'first-image.png');
     fs.writeFileSync(outPath, PNG.sync.write(png));
     expect(fs.existsSync(outPath)).to.be.true;
   });

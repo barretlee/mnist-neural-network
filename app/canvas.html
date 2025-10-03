@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MNIST Canvas</title>
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #f7f7f7;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    h1 {
+      margin-bottom: 8px;
+      font-size: 2em;
+      color: #222;
+    }
+    h2 {
+      margin-bottom: 24px;
+      font-size: 1.1em;
+      font-weight: normal;
+      color: #555;
+    }
+    #canvas {
+      border: 2px solid #333;
+      background: #fff;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      display: block;
+    }
+    .btn-group {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    button {
+      padding: 8px 20px;
+      font-size: 1em;
+      border-radius: 4px;
+      border: 1px solid #888;
+      background: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #eaeaea;
+    }
+    #result {
+      margin-top: 8px;
+      font-size: 1.3em;
+      color: #1976d2;
+      min-height: 1.5em;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>手写数字识别演示</h1>
+  <h2>在下方画布中绘制一个数字，点击“识别数字”按钮进行识别</h2>
+  <canvas id="canvas" width="300" height="300"></canvas>
+  <div class="btn-group">
+    <button id="predictBtn">识别数字</button>
+    <button id="clearBtn">清空</button>
+  </div>
+  <div id="result"></div>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+
+    ctx.lineWidth = 20;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#000';
+
+    canvas.addEventListener('mousedown', e => {
+      drawing = true;
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    });
+    canvas.addEventListener('mousemove', e => {
+      if (drawing) {
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+      }
+    });
+    canvas.addEventListener('mouseup', () => drawing = false);
+    canvas.addEventListener('mouseleave', () => drawing = false);
+
+    document.getElementById('clearBtn').onclick = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      document.getElementById('result').textContent = '';
+    };
+
+    document.getElementById('predictBtn').onclick = async () => {
+      // 将画布缩放到 28x28 灰度
+      const imgData = ctx.getImageData(0, 0, 300, 300);
+      const small = document.createElement('canvas');
+      small.width = 28; small.height = 28;
+      const smallCtx = small.getContext('2d');
+      smallCtx.drawImage(canvas, 0, 0, 28, 28);
+      const data = smallCtx.getImageData(0, 0, 28, 28).data;
+      // 转为灰度数组
+      const arr = [];
+      for (let i = 0; i < data.length; i += 4) {
+        // 简单平均灰度
+        arr.push((data[i] + data[i+1] + data[i+2]) / 3);
+      }
+      // 发送到后端
+      const res = await fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: arr })
+      });
+      const result = await res.json();
+      document.getElementById('result').textContent =
+        result.error ? result.error : `识别结果: ${result.prediction}`;
+    };
+  </script>
+</body>
+</html>

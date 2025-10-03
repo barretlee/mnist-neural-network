@@ -6,7 +6,8 @@
   "license": "MIT",
   "main": "src/train.js",
   "scripts": {
-    "test": "mocha \"test/**/*.spec.js\""
+    "test": "mocha \"test/**/*.spec.js\"",
+    "server": "node app/server.js"
   },
   "keywords": [
     "deep-learning",

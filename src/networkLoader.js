@@ -6,10 +6,15 @@ const NeuralNetwork = require('./network');
 /**
  * 加载 build 目录下的神经网络模型（权重和配置）
  */
-function loadNetworkFromBuild() {
+function loadNetworkFromBuild(autoTrain = false) {
   const buildDir = path.join(__dirname, '../build');
   const modelPath = path.join(buildDir, 'model.json');
   const configPath = path.join(buildDir, 'config.json');
+
+  // 只有 autoTrain 为 true 时自动训练
+  if ((!fs.existsSync(modelPath) || !fs.existsSync(configPath)) && autoTrain) {
+    require('../src/train');
+  }
 
   if (fs.existsSync(modelPath) && fs.existsSync(configPath)) {
     const model = JSON.parse(fs.readFileSync(modelPath, 'utf8'));
