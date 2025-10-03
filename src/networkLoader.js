@@ -4,9 +4,7 @@ const path = require('path');
 const NeuralNetwork = require('./network');
 
 /**
- * 从 build 目录加载已训练好的神经网络模型
- * 如果模型和配置文件存在，则装配并返回 NeuralNetwork 实例
- * 否则返回 null
+ * 加载 build 目录下的神经网络模型（权重和配置）
  */
 function loadNetworkFromBuild() {
   const buildDir = path.join(__dirname, '../build');
